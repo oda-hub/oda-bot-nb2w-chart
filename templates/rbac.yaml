@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "oda-bot-nb2w.serviceAccountName" . }}
+  labels:
+    {{- include "oda-bot-nb2w.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "oda-bot-nb2w.serviceAccountName" . }}
+rules:
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - create
+      - delete
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - watch
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+    verbs:
+      - get
+      - list
+      - patch
+      - create
+  - apiGroups: [""]
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+  - apiGroups: [""]
+    resources:
+      - pods/exec
+    verbs:
+      - create
+  - apiGroups: [""]
+    resources:
+      - services
+    verbs:
+      - get
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "oda-bot-nb2w.serviceAccountName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "oda-bot-nb2w.serviceAccountName" . }}
+roleRef:
+  kind: Role
+  name: {{ include "oda-bot-nb2w.serviceAccountName" . }}
+  apiGroup: rbac.authorization.k8s.io

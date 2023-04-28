@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "oda-bot-nb2w.fullname" . }}
+  labels:
+    {{- include "oda-bot-nb2w.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "oda-bot-nb2w.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "oda-bot-nb2w.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "oda-bot-nb2w.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if ( hasKey .Values.externalSecrets "smtp" ) }}
+          envFrom:
+          - secretRef:
+              name: {{ .Values.externalSecrets.smtp }}
+          {{- end }}
+          env:
+          - name: ODA_JWT_SECRET
+            valueFrom:
+              secretKeyRef: 
+                name: {{ .Values.externalSecrets.frontend }}
+                key: jwt-key
+          volumeMounts:
+          - name: settings
+            mountPath: /settings.toml
+            subPath: settings.toml
+          - name: dispatcher-scratch
+            mountPath: /dispatcher-scratch
+          - name: frontend-instruments
+            mountPath: /frontend-instruments
+      volumes:
+      - name: settings
+        configMap:
+          name: {{ include "oda-bot-nb2w.fullname" . }}-conf
+      {{- if ( hasKey .Values.externalPVC "kgFileVolume" ) }}
+      - name: dispatcher-scratch
+        persistentVolumeClaim:
+          claimName: {{ .Values.externalPVC.kgFileVolume }}
+      {{- end }}
+      - name: frontend-instruments
+        persistentVolumeClaim:
+          claimName: {{ .Values.externalPVC.frontendInstruments }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

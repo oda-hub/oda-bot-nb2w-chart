@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  settings.toml: {{- .Values.settingsContent | toYaml | indent 4 }} 
+
+kind: ConfigMap
+metadata:
+  name: {{ include "oda-bot-nb2w.fullname" . }}-conf
