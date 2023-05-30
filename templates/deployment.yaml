@@ -44,6 +44,10 @@ spec:
               secretKeyRef: 
                 name: {{ .Values.externalSecrets.frontend }}
                 key: jwt-key
+          {{- range $idx, $content := default (list) .Values.extra_env_var }} 
+          - name: {{ $content.name }}
+            value: "{{ $content.value }}"
+          {{- end }}
           volumeMounts:
           - name: settings
             mountPath: /settings.toml
