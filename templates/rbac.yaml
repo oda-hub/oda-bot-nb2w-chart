@@ -39,6 +39,7 @@ rules:
       - list
       - patch
       - create
+      - watch
   - apiGroups: [""]
     resources:
       - pods
