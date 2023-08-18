@@ -44,6 +44,13 @@ spec:
               secretKeyRef: 
                 name: {{ .Values.externalSecrets.frontend }}
                 key: jwt-key
+          {{- if ( hasKey .Values.externalSecrets "gitlab" ) }}
+          - name: GITLAB_API_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.externalSecrets.gitlab }}
+                key: token
+          {{- end }}
           {{- range $idx, $content := default (list) .Values.extra_env_var }} 
           - name: {{ $content.name }}
             value: "{{ $content.value }}"
