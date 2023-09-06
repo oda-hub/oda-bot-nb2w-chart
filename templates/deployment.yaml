@@ -33,6 +33,20 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- if and ( hasKey .Values "commandOverride" ) .Values.commandOverride }}
+          command: 
+            {{- range .Values.commandOverride }}
+            - {{ . }}
+            {{- end }}
+          {{- end }}
+          {{- if and ( hasKey .Values "argsOverride" ) .Values.argsOverride }}
+          args: 
+            {{- range .Values.argsOverride }}
+            - {{ . }}
+            {{- end }}
+          {{- else }}
+          args: ["odabot", "--settings", "/settings.toml", "update-workflows", "--loop", "10"]
+          {{- end }}
           {{- if ( hasKey .Values.externalSecrets "smtp" ) }}
           envFrom:
           - secretRef:
