@@ -45,6 +45,7 @@ rules:
       - patch
       - create
       - watch
+      - delete
   - apiGroups: [""]
     resources:
       - pods
@@ -67,6 +68,16 @@ rules:
     verbs:
       - get
       - create
+      - patch 
+      - delete
+  - apiGroups: [""]
+    resources:
+      - persistentvolumeclaims
+    verbs:
+      - get
+      - create
+      - patch
+      - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
