@@ -65,6 +65,13 @@ spec:
                 name: {{ .Values.externalSecrets.gitlab }}
                 key: token
           {{- end }}
+          {{- if ( hasKey .Values.externalSecrets "sentry" ) }}
+          - name: SENTRY_DSN
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.externalSecrets.sentry }}
+                key: SENTRY_DSN
+          {{- end }}
           {{- range $idx, $content := default (list) .Values.extra_env_var }} 
           - name: {{ $content.name }}
             value: "{{ $content.value }}"
